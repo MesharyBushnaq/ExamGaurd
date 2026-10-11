@@ -1,0 +1,21 @@
+{
+  "type": "CRITICAL",
+  "sid": 2,
+  "start_iso": "2025-12-24T15:10:13.413790",
+  "end_iso": "2025-12-24T15:10:26.510446",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "evidence_merged.mp4",
+  "segments_used": [
+    "seg_000775_15-10-12.avi",
+    "seg_000776_15-10-14.avi",
+    "seg_000777_15-10-16.avi",
+    "seg_000778_15-10-18.avi",
+    "seg_000779_15-10-20.avi",
+    "seg_000780_15-10-22.avi",
+    "seg_000781_15-10-24.avi"
+  ],
+  "note": "Segments are used for dashcam-style rolling buffering (cheap pre-roll). Final clip includes overlays because recorder records vis_frame. Playback speed fixed by paced recorder + CFR fps filter in ffmpeg."
+}

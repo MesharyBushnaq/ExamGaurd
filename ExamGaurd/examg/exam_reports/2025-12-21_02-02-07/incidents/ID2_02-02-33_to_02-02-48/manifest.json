@@ -1,0 +1,12 @@
+{
+  "sid": 2,
+  "start_iso": "2025-12-21T02:02:33.456821",
+  "end_iso": "2025-12-21T02:02:48.370255",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "incident_merged.mp4",
+  "segments_copied_count": 8,
+  "note": "Segments are used only as temporary export inputs. If merge succeeds, they are deleted."
+}

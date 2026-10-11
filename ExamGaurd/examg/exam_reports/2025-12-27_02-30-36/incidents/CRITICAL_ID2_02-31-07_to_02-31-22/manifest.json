@@ -1,0 +1,13 @@
+{
+  "type": "CRITICAL",
+  "sid": 2,
+  "start_iso": "2025-12-27T02:31:07.964513",
+  "end_iso": "2025-12-27T02:31:22.323647",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "clip_file": null,
+  "export_mode": "not_ready",
+  "export_status": "pending",
+  "session_recording": "session_recording.mp4",
+  "note": "Clips are cut from the full session recording to avoid multiple simultaneous encoders (NVENC overload) and reduce CPU/IO. If live export fails on Windows (file lock / not-ready MP4), we defer export until session close."
+}

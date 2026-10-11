@@ -1,0 +1,20 @@
+{
+  "type": "CRITICAL",
+  "sid": 3,
+  "start_iso": "2025-12-26T16:53:27.299311",
+  "end_iso": "2025-12-26T16:53:39.279278",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "evidence_merged.mp4",
+  "segments_used": [
+    "seg_000086_16-53-26.avi",
+    "seg_000087_16-53-28.avi",
+    "seg_000088_16-53-30.avi",
+    "seg_000089_16-53-32.avi",
+    "seg_000090_16-53-34.avi",
+    "seg_000091_16-53-36.avi",
+    "seg_000092_16-53-38.avi"
+  ]
+}

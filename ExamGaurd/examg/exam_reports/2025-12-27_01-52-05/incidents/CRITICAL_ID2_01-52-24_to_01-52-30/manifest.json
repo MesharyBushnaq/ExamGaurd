@@ -1,0 +1,13 @@
+{
+  "type": "CRITICAL",
+  "sid": 2,
+  "start_iso": "2025-12-27T01:52:24.703799",
+  "end_iso": "2025-12-27T01:52:30.436708",
+  "behavior": "looking_back",
+  "peak_suspicion": 100,
+  "merge_success": false,
+  "merge_mode": "no_segments",
+  "merged_file": null,
+  "segments_used": [],
+  "note": "Rolling segments are used for dashcam-style buffering (cheap pre-roll). Final clip includes overlays because recorder records the rendered frame. Playback speed fixed by paced recorder. Merge tries stream copy first for minimal CPU."
+}

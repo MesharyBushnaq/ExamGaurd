@@ -1,0 +1,7 @@
+{
+    "suspicion_threshold": 60,
+    "behavior_confidence": 0.2,
+    "recording_fps": 30.0,
+    "buffer_size": 60,
+    "max_clip_duration": 30
+}

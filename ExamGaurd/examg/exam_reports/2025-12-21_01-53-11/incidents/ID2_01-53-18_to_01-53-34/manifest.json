@@ -1,0 +1,17 @@
+{
+  "sid": 2,
+  "start_iso": "2025-12-21T01:53:18.808848",
+  "end_iso": "2025-12-21T01:53:34.242652",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "segments": [
+    "seg_000004_01-53-18.avi",
+    "seg_000005_01-53-20.avi",
+    "seg_000006_01-53-22.avi",
+    "seg_000007_01-53-24.avi",
+    "seg_000008_01-53-26.avi",
+    "seg_000009_01-53-28.avi",
+    "seg_000010_01-53-30.avi"
+  ],
+  "note": "Segments are dashcam-style chunks; range may start/end inside the first/last segment."
+}

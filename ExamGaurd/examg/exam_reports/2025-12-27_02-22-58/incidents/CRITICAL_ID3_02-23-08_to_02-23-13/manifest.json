@@ -1,0 +1,12 @@
+{
+  "type": "CRITICAL",
+  "sid": 3,
+  "start_iso": "2025-12-27T02:23:08.359159",
+  "end_iso": "2025-12-27T02:23:13.936999",
+  "behavior": "looking_back",
+  "peak_suspicion": 90,
+  "clip_file": null,
+  "export_mode": "export_failed",
+  "session_recording": "session_recording.mp4",
+  "note": "Clips are cut from the full session recording to avoid multiple simultaneous encoders (NVENC overload) and reduce CPU/IO. Full session recording includes overlays."
+}

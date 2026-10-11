@@ -1,0 +1,11 @@
+{
+  "type": "CRITICAL",
+  "sid": 3,
+  "start_iso": "2025-12-27T02:08:32.782879",
+  "end_iso": "2025-12-27T02:08:36.960199",
+  "behavior": "looking_back",
+  "peak_suspicion": 100,
+  "clip_file": null,
+  "session_recording": "session_recording.mkv",
+  "note": "Clip was captured using an OBS-style replay buffer: pre-roll frames from RAM + live frames during incident/post-roll. Full session recording is continuous and includes overlays. Paced writer ensures correct real-time playback."
+}

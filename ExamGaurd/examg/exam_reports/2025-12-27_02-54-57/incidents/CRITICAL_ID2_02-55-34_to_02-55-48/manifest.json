@@ -1,0 +1,18 @@
+{
+  "type": "CRITICAL",
+  "sid": 2,
+  "start_iso": "2025-12-27T02:55:34.630323",
+  "end_iso": "2025-12-27T02:55:48.265485",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "segment_seconds": 2.0,
+  "segment_range": [
+    17,
+    26
+  ],
+  "segments_used": [],
+  "clip_file": null,
+  "export_mode": "no_segments",
+  "export_status": "failed",
+  "note": "Clip exported from finalized segment files (reliable on Windows)."
+}

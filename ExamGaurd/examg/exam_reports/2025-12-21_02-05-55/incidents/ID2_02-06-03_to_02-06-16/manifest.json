@@ -1,0 +1,20 @@
+{
+  "sid": 2,
+  "start_iso": "2025-12-21T02:06:03.275014",
+  "end_iso": "2025-12-21T02:06:16.708863",
+  "behavior": "phone",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "incident_merged.mp4",
+  "segments_used": [
+    "seg_000005_02-06-03.avi",
+    "seg_000006_02-06-05.avi",
+    "seg_000007_02-06-07.avi",
+    "seg_000008_02-06-09.avi",
+    "seg_000009_02-06-11.avi",
+    "seg_000010_02-06-13.avi",
+    "seg_000011_02-06-15.avi"
+  ],
+  "note": "Playback speed fixed by recorder pacing + forcing CFR in ffmpeg."
+}

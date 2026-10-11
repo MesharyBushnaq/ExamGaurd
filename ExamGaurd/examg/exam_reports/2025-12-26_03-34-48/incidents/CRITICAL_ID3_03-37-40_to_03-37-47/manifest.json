@@ -1,0 +1,18 @@
+{
+  "type": "CRITICAL",
+  "sid": 3,
+  "start_iso": "2025-12-26T03:37:40.854448",
+  "end_iso": "2025-12-26T03:37:47.050959",
+  "behavior": "looking_right",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "evidence_merged.mp4",
+  "segments_used": [
+    "seg_000086_03-37-40.avi",
+    "seg_000087_03-37-42.avi",
+    "seg_000088_03-37-44.avi",
+    "seg_000089_03-37-46.avi"
+  ],
+  "note": "Segments are used for dashcam-style rolling buffering (cheap pre-roll). Final clip includes overlays because recorder records vis_frame. Playback speed fixed by paced recorder + CFR fps filter in ffmpeg."
+}

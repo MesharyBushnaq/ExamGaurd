@@ -1,0 +1,17 @@
+{
+  "type": "CRITICAL",
+  "sid": 3,
+  "start_iso": "2025-12-26T16:51:06.483601",
+  "end_iso": "2025-12-26T16:51:11.416015",
+  "behavior": "looking_back",
+  "peak_suspicion": 100,
+  "merge_success": true,
+  "merge_mode": "libx264",
+  "merged_file": "evidence_merged.mp4",
+  "segments_used": [
+    "seg_000016_16-51-05.avi",
+    "seg_000017_16-51-07.avi",
+    "seg_000018_16-51-09.avi",
+    "seg_000019_16-51-11.avi"
+  ]
+}

@@ -1,0 +1,1916 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ExamGaurd Dashboard</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root{
+      --bg0:#0b1020;
+      --bg1:#101a34;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.10);
+      --stroke:rgba(255,255,255,.14);
+      --text:#eaf0ff;
+      --muted:rgba(234,240,255,.72);
+      --muted2:rgba(234,240,255,.52);
+
+      --good:#42f59e;
+      --warn:#ffd24a;
+      --bad:#ff4d6d;
+      --crit:#b14dff;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --shadow2: 0 10px 30px rgba(0,0,0,.25);
+      --blur: 16px;
+      --radius: 18px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 900px at 15% 10%, rgba(46,233,255,.22), transparent 55%),
+        radial-gradient(1100px 800px at 85% 25%, rgba(177,77,255,.22), transparent 55%),
+        radial-gradient(1200px 900px at 60% 90%, rgba(255,77,109,.18), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .blob{
+      position:fixed;
+      inset:auto auto 10% -10%;
+      width:520px; height:520px;
+      background: radial-gradient(circle at 30% 30%, rgba(46,233,255,.35), transparent 55%),
+                  radial-gradient(circle at 70% 60%, rgba(177,77,255,.28), transparent 55%),
+                  radial-gradient(circle at 40% 80%, rgba(255,77,109,.20), transparent 60%);
+      filter: blur(28px);
+      opacity:.55;
+      transform: translateZ(0);
+      animation: floaty 12s ease-in-out infinite alternate;
+      pointer-events:none;
+    }
+    @keyframes floaty{
+      from{ transform: translate(0,0) scale(1); }
+      to{ transform: translate(140px,-40px) scale(1.08); }
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      min-height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      padding:18px;
+      border-right:1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      padding:14px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(46,233,255,.15), rgba(177,77,255,.12));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow2);
+    }
+    .brand .logo{
+      width:44px; height:44px;
+      border-radius:14px;
+      display:grid; place-items:center;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(46,233,255,.35), rgba(46,233,255,.12)),
+        radial-gradient(circle at 80% 70%, rgba(255,77,109,.22), transparent 55%),
+        linear-gradient(135deg, rgba(177,77,255,.25), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .brand .title{ line-height:1.1; }
+    .brand .title b{ display:block; font-size:18px; letter-spacing:.2px; }
+    .brand .title span{ display:block; font-size:12px; color:var(--muted); }
+
+    .nav{ margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+    .nav button{
+      all:unset;
+      cursor:pointer;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid transparent;
+      display:flex; align-items:center; gap:10px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      transition: .18s ease;
+    }
+    .nav button i{ width:18px; text-align:center; opacity:.95; }
+    .nav button:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.10);
+      transform: translateY(-1px);
+      color: var(--text);
+    }
+    .nav button.active{
+      background: linear-gradient(135deg, rgba(46,233,255,.14), rgba(177,77,255,.10));
+      border-color: rgba(255,255,255,.14);
+      color: var(--text);
+      box-shadow: var(--shadow2);
+    }
+
+    .sidebar .foot{
+      position:absolute;
+      bottom:18px; left:18px; right:18px;
+      padding:12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow2);
+    }
+    .pillrow{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      font-size:12px;
+      color: var(--muted);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      white-space:nowrap;
+    }
+    .dot{
+      width:9px; height:9px; border-radius:50%;
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(255,210,74,.15);
+    }
+    .dot.ok{ background: var(--good); box-shadow: 0 0 0 4px rgba(66,245,158,.15); }
+    .dot.bad{ background: var(--bad); box-shadow: 0 0 0 4px rgba(255,77,109,.16); }
+
+    /* Main */
+    .main{ padding:20px 22px 60px; }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+    }
+    .topbar .left{ display:flex; flex-direction:column; gap:4px; }
+    .topbar h1{ margin:0; font-size:22px; letter-spacing:.2px; }
+    .topbar .sub{
+      color: var(--muted);
+      font-size:13px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size:12px;
+    }
+    .chip b{ color: var(--text); font-weight:600; }
+
+    .topbar .actions{ display:flex; gap:10px; align-items:center; }
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow2);
+      transition: .18s ease;
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:13px;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.20);
+    }
+    .btn.primary{
+      border-color: rgba(46,233,255,.28);
+      background: linear-gradient(135deg, rgba(46,233,255,.14), rgba(177,77,255,.10));
+    }
+    .btn.danger{
+      border-color: rgba(255,77,109,.28);
+      background: linear-gradient(135deg, rgba(255,77,109,.14), rgba(255,210,74,.08));
+    }
+
+    /* Layout sections */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:14px;
+    }
+    .panel{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      overflow:hidden;
+      position:relative;
+    }
+    .panel:before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(600px 200px at 20% 10%, rgba(46,233,255,.10), transparent 60%),
+        radial-gradient(500px 220px at 90% 0%, rgba(177,77,255,.08), transparent 60%);
+      pointer-events:none;
+    }
+    .panel .hd{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      position:relative;
+      z-index:1;
+    }
+    .panel .hd h2{ margin:0; font-size:14px; letter-spacing:.2px; }
+    .panel .hd .meta{
+      color: var(--muted2);
+      font-family: var(--mono);
+      font-size:11px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .panel .bd{
+      padding:14px 16px 16px;
+      position:relative;
+      z-index:1;
+    }
+
+    /* KPIs */
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .kpi{
+      padding:14px 14px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      box-shadow: var(--shadow2);
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute; inset:-40px -40px auto auto;
+      width:120px; height:120px;
+      background: radial-gradient(circle at 30% 30%, rgba(46,233,255,.25), transparent 60%);
+      transform: rotate(12deg);
+    }
+    .kpi .row{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .kpi .label{ color: var(--muted); font-size:12px; }
+    .kpi .val{ font-size:22px; font-weight:700; letter-spacing:.2px; margin-top:6px; }
+    .kpi .icon{
+      width:36px; height:36px; border-radius: 14px;
+      display:grid; place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+    }
+    .kpi.good .icon{ border-color: rgba(66,245,158,.30); }
+    .kpi.warn .icon{ border-color: rgba(255,210,74,.30); }
+    .kpi.bad  .icon{ border-color: rgba(255,77,109,.30); }
+    .kpi.crit .icon{ border-color: rgba(177,77,255,.30); }
+
+    /* Common cards */
+    .students, .events{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .events{
+      max-height: 72vh;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .events::-webkit-scrollbar{ width:10px; }
+    .events::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.14);
+      border-radius: 999px;
+      border: 2px solid rgba(0,0,0,.25);
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+    }
+    .badge .miniDot{
+      width:9px; height:9px; border-radius:50%;
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(255,210,74,.14);
+    }
+    .badge.good .miniDot{ background:var(--good); box-shadow:0 0 0 4px rgba(66,245,158,.14); }
+    .badge.bad  .miniDot{ background:var(--bad);  box-shadow:0 0 0 4px rgba(255,77,109,.16); }
+    .badge.crit .miniDot{ background:var(--crit); box-shadow:0 0 0 4px rgba(177,77,255,.16); }
+
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      font-family: var(--mono);
+      color: rgba(234,240,255,.85);
+    }
+    .tag.warning{ border-color: rgba(255,210,74,.35); }
+    .tag.incident{ border-color: rgba(255,77,109,.35); }
+    .tag.critical{ border-color: rgba(177,77,255,.35); }
+
+    /* Student cards */
+    .studentCard{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      padding:12px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      transition:.15s ease;
+    }
+    .studentCard:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.09);
+      border-color: rgba(255,255,255,.18);
+    }
+    .studentTop{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .studentMeta{
+      display:flex; gap:10px; flex-wrap:wrap;
+      color: var(--muted);
+      font-size:12px;
+      margin-top:6px;
+    }
+    .studentMeta span{
+      display:inline-flex; align-items:center; gap:7px;
+      padding:6px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(234,240,255,.72);
+    }
+
+    .gauge{
+      width:88px; height:44px;
+      border-radius: 999px 999px 14px 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .gauge .fill{
+      position:absolute; left:0; bottom:0;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(66,245,158,.75), rgba(255,210,74,.75), rgba(255,77,109,.75), rgba(177,77,255,.75));
+      filter: saturate(1.2);
+    }
+    .gauge .txt{
+      position:absolute; inset:0;
+      display:grid; place-items:center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(234,240,255,.88);
+      text-shadow: 0 2px 12px rgba(0,0,0,.6);
+      letter-spacing:.2px;
+    }
+
+    /* Evidence cards */
+    .evt{
+      padding:12px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .evt .row1{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .evt .leftLine{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      font-size:13px;
+    }
+    .evt .row2{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color: var(--muted);
+      font-size:12px;
+      font-family: var(--mono);
+    }
+    .evt a{ color: var(--text); text-decoration:none; }
+    .evt a:hover{ text-decoration:underline; }
+
+    .videoWrap{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      overflow:hidden;
+    }
+    video{
+      width:100%;
+      height:auto;
+      display:block;
+      background:black;
+    }
+
+    /* Tooltip */
+    .tip{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px; height:28px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      cursor:default;
+    }
+    .tip i{ opacity:.9; }
+    .tip .tipBox{
+      position:absolute;
+      right:0;
+      top:36px;
+      width:min(520px, calc(100vw - 60px));
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(10,14,28,.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      display:none;
+      z-index:50;
+    }
+    .tip:hover .tipBox{ display:block; }
+    .tipBox .tTitle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      font-size:12px;
+      margin-bottom:8px;
+      color: rgba(234,240,255,.9);
+    }
+    .tipBox pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(234,240,255,.78);
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      padding:10px;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow:auto;
+    }
+
+    /* Tabs */
+    .view{ display:none; }
+    .view.active{ display:block; }
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.52);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:1000;
+    }
+    .modalBackdrop.open{ display:flex; }
+    .modal{
+      width:min(1100px, 100%);
+      border-radius: 20px;
+      background: rgba(255,255,255,.09);
+      border:1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 28px 90px rgba(0,0,0,.62);
+      overflow:hidden;
+    }
+    .modal .mh{
+      padding:14px 16px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(46,233,255,.10), rgba(177,77,255,.08));
+    }
+    .modal .mh h3{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .modal .mb{ padding:14px 16px 18px; }
+
+    .settingsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .settingBlock{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      padding:12px 12px;
+    }
+    .settingBlock h4{
+      margin:0 0 10px 0;
+      font-size:13px;
+      color: rgba(234,240,255,.92);
+      display:flex; align-items:center; gap:10px;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:8px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(234,240,255,.78);
+    }
+    .kv div{
+      padding:7px 8px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .kv .k{ color: rgba(234,240,255,.62); }
+
+    .fieldRow{
+      margin-top:10px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .fieldRow label{
+      font-size:12px;
+      color: var(--muted);
+      display:flex; align-items:center; gap:8px;
+    }
+    .fieldRow input{
+      width:min(520px, 100%);
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      outline:none;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .fieldRow input:focus{
+      border-color: rgba(46,233,255,.35);
+      box-shadow: 0 0 0 4px rgba(46,233,255,.12);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{
+        height:auto; position:relative;
+        border-right:none; border-bottom:1px solid rgba(255,255,255,.08);
+      }
+      .sidebar .foot{ position:relative; bottom:auto; left:auto; right:auto; margin-top:12px; }
+      .grid{ grid-template-columns: 1fr; }
+      .kpis{ grid-template-columns: repeat(2, 1fr); }
+      .settingsGrid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="blob"></div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="title">
+          <b>ExamGaurd</b>
+          <span>Session + Evidence Dashboard</span>
+        </div>
+      </div>
+
+      <div class="nav" style="margin-top:14px;">
+        <button class="active" data-view="overview"><i class="fa-solid fa-chart-line"></i>Overview</button>
+        <button data-view="students"><i class="fa-solid fa-users"></i>Students</button>
+        <button data-view="violations"><i class="fa-solid fa-triangle-exclamation"></i>Violations</button>
+        <button id="openSettings"><i class="fa-solid fa-gear"></i>Settings</button>
+      </div>
+
+      <div class="foot">
+        <div class="pillrow">
+          <span>Latest session</span>
+          <span class="pill" id="pillSession"><i class="fa-solid fa-folder-open"></i> —</span>
+        </div>
+        <div class="pillrow" style="margin-top:10px;">
+          <span>Status</span>
+          <span class="pill"><span class="dot" id="statusDot"></span><span id="statusText">Waiting…</span></span>
+        </div>
+        <div class="pillrow" style="margin-top:10px;">
+          <span>Auto refresh</span>
+          <span class="pill"><i class="fa-solid fa-rotate"></i><span id="countdown">10</span>s</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="left">
+          <h1><i class="fa-solid fa-gauge-high" style="opacity:.9;margin-right:8px;"></i>Live Monitor</h1>
+          <div class="sub">
+            <span class="chip"><i class="fa-solid fa-clock"></i> Last update: <b id="lastUpdate">—</b></span>
+            <span class="chip"><i class="fa-solid fa-folder-tree"></i> Scanning: <b id="scanRoot">exam_reports/</b></span>
+            <span class="chip"><i class="fa-solid fa-file-csv"></i> CSV: <b id="csvPath">—</b></span>
+            <span class="chip"><i class="fa-solid fa-video"></i> Evidence: <b id="incidentsPath">—</b></span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnRefresh"><i class="fa-solid fa-rotate-right"></i>Refresh now</button>
+          <button class="btn" id="btnToggleCompact"><i class="fa-solid fa-table-list"></i>Toggle compact</button>
+          <button class="btn danger" id="btnClearSearch"><i class="fa-solid fa-broom"></i>Clear filters</button>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <section class="view active" id="view-overview">
+        <div class="kpis">
+          <div class="kpi good">
+            <div class="row">
+              <div>
+                <div class="label">Unique IDs</div>
+                <div class="val" id="kpiIds">0</div>
+              </div>
+              <div class="icon"><i class="fa-solid fa-id-badge"></i></div>
+            </div>
+          </div>
+          <div class="kpi warn">
+            <div class="row">
+              <div>
+                <div class="label">Warnings</div>
+                <div class="val" id="kpiWarn">0</div>
+              </div>
+              <div class="icon"><i class="fa-solid fa-bell"></i></div>
+            </div>
+          </div>
+          <div class="kpi bad">
+            <div class="row">
+              <div>
+                <div class="label">Incidents</div>
+                <div class="val" id="kpiInc">0</div>
+              </div>
+              <div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+          </div>
+          <div class="kpi crit">
+            <div class="row">
+              <div>
+                <div class="label">Critical</div>
+                <div class="val" id="kpiCrit">0</div>
+              </div>
+              <div class="icon"><i class="fa-solid fa-skull-crossbones"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <div class="hd">
+              <h2><i class="fa-solid fa-users" style="opacity:.9;margin-right:8px;"></i>Students (summary)</h2>
+              <div class="meta">
+                <span><i class="fa-solid fa-folder-open"></i> <span id="sessionLabel">—</span></span>
+                <span><i class="fa-solid fa-hashtag"></i> <span id="topCount">0</span></span>
+              </div>
+            </div>
+            <div class="bd">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <span class="chip" style="cursor:pointer;" data-chip="all"><i class="fa-solid fa-layer-group"></i> all</span>
+                <span class="chip" style="cursor:pointer;" data-chip="WARNING"><i class="fa-solid fa-bell"></i> warning</span>
+                <span class="chip" style="cursor:pointer;" data-chip="INCIDENT"><i class="fa-solid fa-triangle-exclamation"></i> incident</span>
+                <span class="chip" style="cursor:pointer;" data-chip="CRITICAL"><i class="fa-solid fa-skull-crossbones"></i> critical</span>
+
+                <span style="flex:1"></span>
+
+                <span class="chip"><i class="fa-solid fa-magnifying-glass"></i>
+                  <input id="studentSearch" placeholder="search by ID / behavior" style="border:none;outline:none;background:transparent;color:var(--text);width:240px;font-size:12px;" />
+                </span>
+              </div>
+
+              <div class="students" id="topStudents"></div>
+
+              <div id="emptyStudents" style="display:none;margin-top:8px;color:var(--muted);font-size:13px;">
+                No students yet. Waiting for data…
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="hd">
+              <h2><i class="fa-solid fa-video" style="opacity:.9;margin-right:8px;"></i>Latest Evidence Clip</h2>
+              <div class="meta">
+                <span><i class="fa-regular fa-clock"></i> <span id="latestClipWhen">—</span></span>
+              </div>
+            </div>
+            <div class="bd">
+              <div id="latestClipWrap" class="videoWrap" style="display:none;">
+                <video id="latestClipVideo" controls preload="metadata" playsinline></video>
+              </div>
+              <div id="latestClipEmpty" style="color:var(--muted);font-size:13px;">
+                No incident/critical clip found yet.
+              </div>
+              <div id="latestClipMeta" style="margin-top:10px;color:var(--muted);font-size:12px;display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDENTS -->
+      <section class="view" id="view-students">
+        <div class="panel">
+          <div class="hd">
+            <h2><i class="fa-solid fa-users" style="opacity:.9;margin-right:8px;"></i>All Students</h2>
+            <div class="meta">
+              <span><i class="fa-solid fa-folder-open"></i> <span id="studentsSession">—</span></span>
+              <span><i class="fa-solid fa-hashtag"></i> <span id="allStudentsCount">0</span></span>
+            </div>
+          </div>
+          <div class="bd">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+              <span class="chip"><i class="fa-solid fa-magnifying-glass"></i>
+                <input id="studentSearch2" placeholder="search (ID / behavior / type)" style="border:none;outline:none;background:transparent;color:var(--text);width:340px;font-size:12px;" />
+              </span>
+
+              <span class="chip" id="sortChip" style="cursor:pointer;">
+                <i class="fa-solid fa-arrow-down-wide-short"></i>
+                sort: <b id="sortLabel">severity</b>
+              </span>
+            </div>
+
+            <div class="students" id="allStudents"></div>
+            <div id="emptyStudents2" style="display:none;margin-top:8px;color:var(--muted);font-size:13px;">
+              No student data yet.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIOLATIONS -->
+      <section class="view" id="view-violations">
+        <div class="panel">
+          <div class="hd">
+            <h2><i class="fa-solid fa-triangle-exclamation" style="opacity:.9;margin-right:8px;"></i>Violations (Incidents / Critical)</h2>
+            <div class="meta">
+              <span><i class="fa-solid fa-filter"></i> <span id="evtFilterLabel">all</span></span>
+              <span><i class="fa-solid fa-hashtag"></i> <span id="evtCount">0</span></span>
+            </div>
+          </div>
+          <div class="bd">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+              <span class="chip" style="cursor:pointer;" data-evt="all"><i class="fa-solid fa-layer-group"></i> all</span>
+              <span class="chip" style="cursor:pointer;" data-evt="INCIDENT"><i class="fa-solid fa-triangle-exclamation"></i> incident</span>
+              <span class="chip" style="cursor:pointer;" data-evt="CRITICAL"><i class="fa-solid fa-skull-crossbones"></i> critical</span>
+
+              <span style="flex:1"></span>
+
+              <span class="chip"><i class="fa-solid fa-magnifying-glass"></i>
+                <input id="eventSearch" placeholder="search (ID / behavior)" style="border:none;outline:none;background:transparent;color:var(--text);width:280px;font-size:12px;" />
+              </span>
+            </div>
+
+            <div class="events" id="allEvents"></div>
+            <div id="emptyEvents2" style="display:none;margin-top:8px;color:var(--muted);font-size:13px;">
+              No incidents found yet.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modalBackdrop" id="settingsModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="mh">
+        <h3><i class="fa-solid fa-gear"></i> Settings (mostly fake, but useful)</h3>
+        <button class="btn" id="closeSettings"><i class="fa-solid fa-xmark"></i>Close</button>
+      </div>
+      <div class="mb">
+        <div class="fieldRow">
+          <label><i class="fa-solid fa-folder-open"></i> Reports folder</label>
+          <input id="reportDirInput" value="exam_reports" />
+          <button class="btn primary" id="applyReportDir"><i class="fa-solid fa-check"></i>Apply</button>
+          <span style="color:var(--muted);font-size:12px;">
+            The dashboard will auto-pick the newest session inside this folder.
+          </span>
+        </div>
+
+        <div class="fieldRow">
+          <label><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-pick newest session</label>
+          <span class="chip" id="autoPickChip" style="cursor:pointer;"><i class="fa-solid fa-toggle-on"></i> <b id="autoPickLabel">ON</b></span>
+          <span style="color:var(--muted);font-size:12px;">
+            If OFF, it will use the manual session value below.
+          </span>
+        </div>
+
+        <div class="fieldRow">
+          <label><i class="fa-solid fa-folder-tree"></i> Manual session</label>
+          <input id="sessionInput" placeholder="2025-12-24_14-40-22" />
+          <button class="btn primary" id="applySession"><i class="fa-solid fa-check"></i>Use session</button>
+        </div>
+
+        <div class="settingsGrid" style="margin-top:12px;">
+          <div class="settingBlock">
+            <h4><i class="fa-solid fa-video"></i> Capture</h4>
+            <div class="kv">
+              <div class="k">VIDEO_SOURCE</div><div>1</div>
+              <div class="k">CAMERA_WIDTH</div><div>2514</div>
+              <div class="k">CAMERA_HEIGHT</div><div>1080</div>
+            </div>
+          </div>
+
+          <div class="settingBlock">
+            <h4><i class="fa-solid fa-brain"></i> Detection / Tracking</h4>
+            <div class="kv">
+              <div class="k">INFERENCE_SIZE</div><div>640</div>
+              <div class="k">CONF_BEHAVIOR</div><div>0.20</div>
+              <div class="k">MODEL_PATH</div><div>best.pt</div>
+              <div class="k">TRACKER_YAML</div><div>bytetrack_custom.yaml</div>
+            </div>
+          </div>
+
+          <div class="settingBlock">
+            <h4><i class="fa-solid fa-record-vinyl"></i> Recording</h4>
+            <div class="kv">
+              <div class="k">REPORT_DIR</div><div>exam_reports</div>
+              <div class="k">RECORDING_FPS</div><div>30.0</div>
+              <div class="k">SEGMENT_SECONDS</div><div>2.0</div>
+              <div class="k">ROLLING_MINUTES</div><div>2.0</div>
+              <div class="k">PRE_ROLL_SECONDS</div><div>2.0</div>
+              <div class="k">POST_ROLL_SECONDS</div><div>2.0</div>
+              <div class="k">SEGMENT_EXT</div><div>avi</div>
+              <div class="k">MERGED_EXT</div><div>mp4</div>
+            </div>
+          </div>
+
+          <div class="settingBlock">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Incident Logic</h4>
+            <div class="kv">
+              <div class="k">WARN_THRESH</div><div>60</div>
+              <div class="k">INCIDENT_THRESH</div><div>75</div>
+              <div class="k">CRITICAL_THRESH</div><div>90</div>
+              <div class="k">STOP_HYSTERESIS</div><div>20</div>
+              <div class="k">CONSECUTIVE_NORMAL_TO_STOP</div><div>45</div>
+              <div class="k">DEFAULT_DWELL</div><div>6</div>
+              <div class="k">COOLDOWN_SECONDS</div><div>3.0</div>
+              <div class="k">MAX_INCIDENT_SECONDS</div><div>30.0</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;color:var(--muted);font-size:12px;line-height:1.45;">
+          Tip: Browsers generally don’t play <b>.avi</b> directly. Your actual “cheating clip” is usually <b>evidence_merged.mp4</b> (previewable).
+          If merge fails, you’ll still see the AVI segment names in the (i) tooltip and (if the folder exists) links to the copied segments.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // ExamGaurd Frontend Dashboard (pure HTML + JS)
+    // - Auto-detect newest session folder under REPORT_DIR
+    // - Parse CSV warnings + manifests for incidents
+    // - Show evidence clip preview + manifest tooltip
+    // - Refresh every 10 seconds
+    // ============================================================
+
+    let REPORT_DIR = "exam_reports";
+    let autoPickLatest = true;
+    let manualSession = ""; // used when autoPickLatest is false
+
+    const REFRESH_MS = 10_000;
+
+    // UI state
+    let compactMode = false;
+    let topFilter = "all";
+    let evtFilter = "all";
+    let sortMode = "severity"; // severity | recent | id
+
+    // Data
+    let sessionFolder = "";
+    let warnings = [];   // from csv
+    let incidents = [];  // from manifest (preferred) or csv fallback
+    let students = [];   // aggregated
+    let countdown = 10;
+    let countdownTimer = null;
+
+    // ---------- Helpers ----------
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function nowNice(){
+      const d = new Date();
+      return d.toISOString().replace("T"," ").replace("Z","");
+    }
+
+    function safeNum(x, fallback=0){
+      const n = Number(x);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function eventTypeRank(t){
+      if (t === "CRITICAL") return 3;
+      if (t === "INCIDENT") return 2;
+      if (t === "WARNING") return 1;
+      return 0;
+    }
+
+    function niceBehavior(b){
+      if (!b) return "—";
+      return b.replaceAll("_"," ");
+    }
+
+    function badgeClassForStudent(s){
+      if (s.countCritical > 0) return "crit";
+      if (s.countIncident > 0) return "bad";
+      if (s.countWarning > 0) return "warn";
+      return "good";
+    }
+
+    // Robust-ish CSV parse (handles quotes)
+    function parseCSV(text){
+      const rows = [];
+      let i = 0, field = "", row = [], inQuotes = false;
+
+      while (i < text.length){
+        const c = text[i];
+
+        if (inQuotes){
+          if (c === '"'){
+            if (text[i+1] === '"'){ field += '"'; i += 2; continue; }
+            inQuotes = false; i++; continue;
+          }
+          field += c; i++; continue;
+        }
+
+        if (c === '"'){ inQuotes = true; i++; continue; }
+
+        if (c === ","){
+          row.push(field); field = ""; i++; continue;
+        }
+        if (c === "\r"){ i++; continue; }
+        if (c === "\n"){
+          row.push(field); field = "";
+          if (row.length > 1 || (row.length === 1 && row[0].trim() !== "")) rows.push(row);
+          row = [];
+          i++; continue;
+        }
+
+        field += c; i++;
+      }
+
+      if (field.length || row.length){
+        row.push(field);
+        if (row.length) rows.push(row);
+      }
+      return rows;
+    }
+
+    async function fetchTextNoCache(url){
+      const u = `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      const res = await fetch(u, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return await res.text();
+    }
+
+    async function fetchJsonNoCache(url){
+      const u = `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      const res = await fetch(u, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return await res.json();
+    }
+
+    function joinUrl(...parts){
+      return parts
+        .filter(Boolean)
+        .map(p => String(p).replaceAll("\\","/"))
+        .join("/")
+        .replaceAll(/\/{2,}/g, "/");
+    }
+
+    // Parse directory listing HTML (works with python -m http.server and many others)
+    function parseDirListingHrefs(html){
+      const hrefs = [];
+      const re = /href="([^"]+)"/g;
+      let m;
+      while ((m = re.exec(html)) !== null){
+        const href = m[1];
+        if (!href || href === "../") continue;
+        hrefs.push(decodeURIComponent(href));
+      }
+      // unique
+      return Array.from(new Set(hrefs));
+    }
+
+    function isSessionFolderName(name){
+      // 2025-12-24_14-40-22/
+      return /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\/?$/.test(name);
+    }
+
+    async function detectLatestSession(){
+      const url = `./${REPORT_DIR}/`;
+      const html = await fetchTextNoCache(url);
+      const hrefs = parseDirListingHrefs(html);
+
+      const sessions = hrefs
+        .filter(isSessionFolderName)
+        .map(s => s.replace(/\/$/,""))
+        .sort(); // lexicographic works because naming is YYYY-MM-DD_HH-MM-SS
+
+      return sessions.length ? sessions[sessions.length - 1] : "";
+    }
+
+    async function listIncidentFolders(session){
+      const url = `./${REPORT_DIR}/${session}/incidents/`;
+      const html = await fetchTextNoCache(url);
+      const hrefs = parseDirListingHrefs(html);
+
+      // folders like CRITICAL_ID2_14-43-09_to_14-43-14/
+      const folders = hrefs
+        .filter(h => /(INCIDENT|CRITICAL)_ID\d+_\d{2}-\d{2}-\d{2}_to_\d{2}-\d{2}-\d{2}\/?$/.test(h))
+        .map(s => s.replace(/\/$/,""))
+        .sort()
+        .reverse(); // newest-ish first
+
+      return folders;
+    }
+
+    // ---------- Loaders ----------
+    async function loadCsvWarnings(session){
+      const csvPath = `./${REPORT_DIR}/${session}/event_log.csv`;
+      try{
+        const csvText = await fetchTextNoCache(csvPath);
+        const rows = parseCSV(csvText.trim());
+        if (!rows.length) return [];
+
+        const header = rows[0].map(x => (x ?? "").trim());
+        const body = rows.slice(1);
+
+        const idx = {
+          Type: header.indexOf("Type"),
+          StartISO: header.indexOf("StartISO"),
+          EndISO: header.indexOf("EndISO"),
+          ID: header.indexOf("ID"),
+          Behavior: header.indexOf("Behavior"),
+          PeakSuspicion: header.indexOf("PeakSuspicion"),
+          MergedFile: header.indexOf("MergedFile"),
+          MergeMode: header.indexOf("MergeMode")
+        };
+
+        const usePos = (idx.Type === -1);
+
+        const out = [];
+        for (const r of body){
+          const get = (name, pos) => {
+            if (usePos) return (r[pos] ?? "").trim();
+            const i = idx[name];
+            return (i >= 0 ? (r[i] ?? "") : "").trim();
+          };
+
+          const Type = get("Type", 0);
+          if (!Type) continue;
+
+          const StartISO = get("StartISO", 1);
+          const EndISO = get("EndISO", 2);
+          const ID = get("ID", 3);
+          const Behavior = get("Behavior", 4);
+          const PeakSuspicion = get("PeakSuspicion", 5);
+          const MergedFile = get("MergedFile", 6);
+          const MergeMode = get("MergeMode", 7);
+
+          const evt = {
+            type: Type,
+            sid: safeNum(ID, ID),
+            start_iso: StartISO,
+            end_iso: EndISO,
+            behavior: Behavior,
+            peak_suspicion: safeNum(PeakSuspicion, 0),
+            merge_success: !!MergedFile,
+            merge_mode: MergeMode || "",
+            merged_file: MergedFile || null,
+            _source: "csv"
+          };
+
+          if (Type === "WARNING") out.push(evt);
+        }
+        return out;
+      }catch(e){
+        // CSV might not exist yet
+        return [];
+      }
+    }
+
+    async function loadIncidentManifests(session, incidentFolders){
+      const baseInc = `./${REPORT_DIR}/${session}/incidents`;
+      const tasks = incidentFolders.map(async (folder) => {
+        const manifestUrl = joinUrl(baseInc, folder, "manifest.json");
+        try{
+          const manifest = await fetchJsonNoCache(manifestUrl);
+
+          // Build a convenient evidence URL (usually mp4)
+          const mergedFile = manifest?.merged_file;
+          const evidenceUrl = (mergedFile && manifest?.merge_success)
+            ? joinUrl(baseInc, folder, mergedFile)
+            : null;
+
+          // segments folder (if merge failed or copies kept)
+          const segBase = joinUrl(baseInc, folder, "segments");
+
+          return {
+            ...manifest,
+            folder,
+            evidence_url: evidenceUrl,
+            manifest_url: manifestUrl,
+            segments_base: segBase,
+            _source: "manifest"
+          };
+        }catch(e){
+          // manifest might not exist yet (job in progress)
+          return null;
+        }
+      });
+
+      const settled = await Promise.allSettled(tasks);
+      const out = [];
+      for (const s of settled){
+        if (s.status === "fulfilled" && s.value) out.push(s.value);
+      }
+
+      // newest first by start_iso
+      out.sort((a,b) => (Date.parse(b.start_iso)||0) - (Date.parse(a.start_iso)||0));
+      return out;
+    }
+
+    function aggregateStudents(warningsArr, incidentsArr){
+      const map = new Map();
+
+      // add warnings
+      for (const w of warningsArr){
+        const id = String(w.sid);
+        if (!map.has(id)){
+          map.set(id, baseStudentObj(id));
+        }
+        const s = map.get(id);
+        s.countWarning++;
+        if ((Date.parse(w.start_iso)||0) > (Date.parse(s.lastWhen)||0)){
+          s.lastWhen = w.start_iso;
+          s.lastType = "WARNING";
+          s.lastBehavior = w.behavior;
+          s.lastScore = w.peak_suspicion;
+        }
+        if (w.peak_suspicion > s.peakScore){
+          s.peakScore = w.peak_suspicion;
+          s.peakType = "WARNING";
+          s.peakBehavior = w.behavior;
+        }
+      }
+
+      // add incidents/critical
+      for (const e of incidentsArr){
+        const id = String(e.sid);
+        if (!map.has(id)){
+          map.set(id, baseStudentObj(id));
+        }
+        const s = map.get(id);
+
+        if (e.type === "INCIDENT") s.countIncident++;
+        if (e.type === "CRITICAL") s.countCritical++;
+
+        // peak score / severity
+        const sr = eventTypeRank(e.type);
+        const pr = eventTypeRank(s.peakType);
+        if (e.peak_suspicion > s.peakScore || (e.peak_suspicion === s.peakScore && sr > pr)){
+          s.peakScore = e.peak_suspicion;
+          s.peakType = e.type;
+          s.peakBehavior = e.behavior;
+        }
+
+        // latest
+        if ((Date.parse(e.start_iso)||0) >= (Date.parse(s.lastWhen)||0)){
+          s.lastWhen = e.start_iso;
+          s.lastType = e.type;
+          s.lastBehavior = e.behavior;
+          s.lastScore = e.peak_suspicion;
+          s.latestEvidenceUrl = e.evidence_url || "";
+          s.latestManifestUrl = e.manifest_url || "";
+          s.latestFolder = e.folder || "";
+        }
+      }
+
+      return Array.from(map.values());
+    }
+
+    function baseStudentObj(id){
+      return {
+        id,
+        countWarning: 0,
+        countIncident: 0,
+        countCritical: 0,
+        peakScore: 0,
+        peakType: "NONE",
+        peakBehavior: "normal",
+        lastWhen: "",
+        lastType: "",
+        lastBehavior: "",
+        lastScore: 0,
+        latestEvidenceUrl: "",
+        latestManifestUrl: "",
+        latestFolder: ""
+      };
+    }
+
+    // ---------- Status ----------
+    function setStatus(mode, detail){
+      const dot = $("#statusDot");
+      const txt = $("#statusText");
+
+      if (mode === "ok"){
+        dot.className = "dot ok";
+        txt.textContent = "Live";
+      }else if (mode === "bad"){
+        dot.className = "dot bad";
+        txt.textContent = detail ? `No data` : "No data";
+      }else{
+        dot.className = "dot";
+        txt.textContent = "Loading…";
+      }
+    }
+
+    // ---------- Rendering ----------
+    function renderAll(){
+      renderHeaderPaths();
+      renderKPIs();
+      renderTopStudents();
+      renderLatestClip();
+      renderStudentsView();
+      renderViolationsView();
+    }
+
+    function renderHeaderPaths(){
+      $("#scanRoot").textContent = `${REPORT_DIR}/`;
+      $("#pillSession").innerHTML = `<i class="fa-solid fa-folder-open"></i> ${escapeHtml(sessionFolder || "—")}`;
+      $("#sessionLabel").textContent = sessionFolder || "—";
+      $("#studentsSession").textContent = sessionFolder || "—";
+
+      const csvPath = sessionFolder ? `${REPORT_DIR}/${sessionFolder}/event_log.csv` : "—";
+      const incPath = sessionFolder ? `${REPORT_DIR}/${sessionFolder}/incidents/` : "—";
+      $("#csvPath").textContent = csvPath;
+      $("#incidentsPath").textContent = incPath;
+    }
+
+    function renderKPIs(){
+      const ids = new Set(students.map(s => String(s.id))).size;
+      const warnN = warnings.length;
+      const incN = incidents.filter(x => x.type === "INCIDENT").length;
+      const critN = incidents.filter(x => x.type === "CRITICAL").length;
+
+      $("#kpiIds").textContent = ids;
+      $("#kpiWarn").textContent = warnN;
+      $("#kpiInc").textContent  = incN;
+      $("#kpiCrit").textContent = critN;
+
+      $("#topCount").textContent = Math.min(compactMode ? 6 : 10, students.length);
+    }
+
+    function studentCardEl(s){
+      const badgeCls = badgeClassForStudent(s);
+      const score = Math.max(0, Math.min(100, Number(s.peakScore || 0)));
+      const scorePct = `${score}%`;
+
+      const typeLabel = (s.lastType || "—").toLowerCase();
+      const behavior = niceBehavior(s.lastBehavior || s.peakBehavior);
+
+      const evidenceHtml = s.latestEvidenceUrl
+        ? `<a href="${escapeHtml(s.latestEvidenceUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i> evidence</a>
+           <span style="opacity:.6">•</span>
+           <a href="${escapeHtml(s.latestManifestUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-file-code"></i> manifest</a>
+           <span style="opacity:.6">•</span>
+           <a href="#" data-openclip="1" data-clipurl="${escapeHtml(s.latestEvidenceUrl)}" data-title="ID ${escapeHtml(s.id)} — ${escapeHtml(s.lastType)}" class="openClipLink">
+             <i class="fa-solid fa-up-right-from-square"></i> preview
+           </a>`
+        : `<span style="opacity:.75"><i class="fa-regular fa-circle-xmark"></i> no clip</span>`;
+
+      const wrap = document.createElement("div");
+      wrap.className = "studentCard";
+      wrap.innerHTML = `
+        <div>
+          <div class="studentTop">
+            <span class="badge ${badgeCls}">
+              <span class="miniDot"></span>
+              <b>ID ${escapeHtml(s.id)}</b>
+              <span style="opacity:.75">•</span>
+              <span>${escapeHtml(typeLabel)}</span>
+            </span>
+
+            <span class="tag ${typeLabel === "critical" ? "critical" : (typeLabel === "incident" ? "incident" : "warning")}">
+              <i class="fa-solid ${typeLabel === "critical" ? "fa-skull-crossbones" : (typeLabel === "incident" ? "fa-triangle-exclamation" : "fa-bell")}"></i>
+              last: ${escapeHtml(typeLabel)}
+            </span>
+          </div>
+
+          <div class="studentMeta">
+            <span><i class="fa-solid fa-eye"></i> behavior: <b style="color:var(--text);font-weight:700">${escapeHtml(behavior)}</b></span>
+            <span><i class="fa-solid fa-chart-simple"></i> peak: <b style="color:var(--text);font-weight:700">${escapeHtml(s.peakScore)}</b></span>
+            <span><i class="fa-regular fa-clock"></i> ${escapeHtml(s.lastWhen || "—")}</span>
+            <span><i class="fa-solid fa-bell"></i> W:${escapeHtml(s.countWarning)} I:${escapeHtml(s.countIncident)} C:${escapeHtml(s.countCritical)}</span>
+          </div>
+
+          <div style="margin-top:8px;color:var(--muted);font-size:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            ${evidenceHtml}
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:10px;">
+          <div class="gauge" title="peak suspicion (0..100)">
+            <div class="fill" style="width:${escapeHtml(scorePct)}"></div>
+            <div class="txt">${escapeHtml(scorePct)}</div>
+          </div>
+        </div>
+      `;
+      return wrap;
+    }
+
+    function renderTopStudents(){
+      const q = ($("#studentSearch").value || "").trim().toLowerCase();
+      let arr = [...students];
+
+      if (topFilter !== "all"){
+        arr = arr.filter(s => {
+          if (topFilter === "WARNING") return s.countWarning > 0;
+          if (topFilter === "INCIDENT") return s.countIncident > 0;
+          if (topFilter === "CRITICAL") return s.countCritical > 0;
+          return true;
+        });
+      }
+
+      if (q){
+        arr = arr.filter(s =>
+          s.id.toLowerCase().includes(q) ||
+          (s.lastBehavior || "").toLowerCase().includes(q) ||
+          (s.peakBehavior || "").toLowerCase().includes(q)
+        );
+      }
+
+      arr.sort((a,b) => {
+        const ra = (a.countCritical>0?3:(a.countIncident>0?2:(a.countWarning>0?1:0)));
+        const rb = (b.countCritical>0?3:(b.countIncident>0?2:(b.countWarning>0?1:0)));
+        if (rb !== ra) return rb - ra;
+        return (b.peakScore - a.peakScore);
+      });
+
+      const top = arr.slice(0, compactMode ? 6 : 10);
+      $("#topCount").textContent = top.length;
+
+      const host = $("#topStudents");
+      host.innerHTML = "";
+      if (!top.length){
+        $("#emptyStudents").style.display = "block";
+        return;
+      }
+      $("#emptyStudents").style.display = "none";
+      for (const s of top) host.appendChild(studentCardEl(s));
+
+      // wire preview links
+      wirePreviewLinks();
+    }
+
+    function renderLatestClip(){
+      const best = incidents[0]; // incidents already sorted newest-first
+      const wrap = $("#latestClipWrap");
+      const vid = $("#latestClipVideo");
+      const empty = $("#latestClipEmpty");
+      const meta = $("#latestClipMeta");
+
+      if (!best || !best.evidence_url){
+        wrap.style.display = "none";
+        meta.style.display = "none";
+        empty.style.display = "block";
+        $("#latestClipWhen").textContent = "—";
+        vid.removeAttribute("src");
+        vid.load();
+        return;
+      }
+
+      empty.style.display = "none";
+      wrap.style.display = "block";
+      meta.style.display = "block";
+      $("#latestClipWhen").textContent = best.start_iso || "—";
+
+      // load video
+      vid.src = best.evidence_url;
+
+      meta.innerHTML = `
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <span class="tag ${best.type === "CRITICAL" ? "critical" : "incident"}">
+            <i class="fa-solid ${best.type === "CRITICAL" ? "fa-skull-crossbones" : "fa-triangle-exclamation"}"></i>
+            ${escapeHtml(best.type)}
+          </span>
+          <span class="chip"><i class="fa-solid fa-id-badge"></i> ID <b>${escapeHtml(best.sid)}</b></span>
+          <span class="chip"><i class="fa-solid fa-eye"></i> <b>${escapeHtml(niceBehavior(best.behavior))}</b></span>
+          <span class="chip"><i class="fa-solid fa-chart-simple"></i> peak <b>${escapeHtml(best.peak_suspicion)}</b></span>
+          <span class="chip"><i class="fa-solid fa-folder"></i> <b>${escapeHtml(best.folder)}</b></span>
+        </div>
+      `;
+    }
+
+    function renderStudentsView(){
+      const host = $("#allStudents");
+      host.innerHTML = "";
+
+      let arr = [...students];
+      const q = ($("#studentSearch2").value || "").trim().toLowerCase();
+      if (q){
+        arr = arr.filter(s =>
+          s.id.toLowerCase().includes(q) ||
+          (s.lastBehavior || "").toLowerCase().includes(q) ||
+          (s.peakBehavior || "").toLowerCase().includes(q) ||
+          (s.lastType || "").toLowerCase().includes(q) ||
+          String(s.peakScore).includes(q)
+        );
+      }
+
+      if (sortMode === "severity"){
+        arr.sort((a,b) => {
+          const ra = (a.countCritical>0?3:(a.countIncident>0?2:(a.countWarning>0?1:0)));
+          const rb = (b.countCritical>0?3:(b.countIncident>0?2:(b.countWarning>0?1:0)));
+          if (rb !== ra) return rb - ra;
+          return (b.peakScore - a.peakScore);
+        });
+      }else if (sortMode === "recent"){
+        arr.sort((a,b) => (Date.parse(b.lastWhen)||0) - (Date.parse(a.lastWhen)||0));
+      }else{
+        arr.sort((a,b) => Number(a.id) - Number(b.id));
+      }
+
+      $("#allStudentsCount").textContent = arr.length;
+
+      if (!arr.length){
+        $("#emptyStudents2").style.display = "block";
+        return;
+      }
+      $("#emptyStudents2").style.display = "none";
+
+      const max = compactMode ? 18 : 80;
+      for (const s of arr.slice(0, max)){
+        host.appendChild(studentCardEl(s));
+      }
+
+      wirePreviewLinks();
+    }
+
+    function buildManifestTooltip(man){
+      // “boring info” shown on hover
+      const boring = {
+        type: man.type,
+        sid: man.sid,
+        start_iso: man.start_iso,
+        end_iso: man.end_iso,
+        behavior: man.behavior,
+        peak_suspicion: man.peak_suspicion,
+        merge_success: man.merge_success,
+        merge_mode: man.merge_mode,
+        merged_file: man.merged_file,
+        segments_used: man.segments_used,
+        note: man.note
+      };
+      return JSON.stringify(boring, null, 2);
+    }
+
+    function violationCardEl(e){
+      const t = (e.type || "INCIDENT").toLowerCase();
+      const icon = (e.type === "CRITICAL") ? "fa-skull-crossbones" : "fa-triangle-exclamation";
+
+      const tipJson = buildManifestTooltip(e);
+
+      // segments (AVI) — links if they exist (server will 404 if not present; that’s okay)
+      const segs = Array.isArray(e.segments_used) ? e.segments_used : [];
+      const segLinks = segs.slice(0, 12).map(s => {
+        const url = joinUrl(e.segments_base, s);
+        return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="font-family:var(--mono)">${escapeHtml(s)}</a>`;
+      }).join(`<span style="opacity:.5"> • </span>`);
+
+      const evidenceLink = e.evidence_url
+        ? `<a href="${escapeHtml(e.evidence_url)}" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i> open video</a>`
+        : `<span style="opacity:.75"><i class="fa-regular fa-circle-xmark"></i> no merged clip</span>`;
+
+      const card = document.createElement("div");
+      card.className = "evt";
+
+      card.innerHTML = `
+        <div class="row1">
+          <div class="leftLine">
+            <span class="tag ${t === "critical" ? "critical" : "incident"}">
+              <i class="fa-solid ${icon}"></i> ${escapeHtml(e.type)}
+            </span>
+            <b>ID ${escapeHtml(e.sid)}</b>
+            <span style="opacity:.55">•</span>
+            <span>${escapeHtml(niceBehavior(e.behavior))}</span>
+            <span style="opacity:.55">•</span>
+            <span style="font-family:var(--mono)">peak ${escapeHtml(e.peak_suspicion)}</span>
+            <span style="opacity:.55">•</span>
+            <span style="font-family:var(--mono)">${escapeHtml(e.folder || "")}</span>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div class="tip" title="manifest info">
+              <i class="fa-solid fa-circle-info"></i>
+              <div class="tipBox">
+                <div class="tTitle">
+                  <span><i class="fa-solid fa-file-code"></i> manifest.json (boring info)</span>
+                  <a href="${escapeHtml(e.manifest_url || "#")}" target="_blank" rel="noopener" style="color:rgba(234,240,255,.82);text-decoration:none;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  </a>
+                </div>
+                <pre>${escapeHtml(tipJson)}</pre>
+              </div>
+            </div>
+            <button class="btn primary openClipBtn" data-clipurl="${escapeHtml(e.evidence_url || "")}" data-title="${escapeHtml(`ID ${e.sid} — ${e.type}`)}" ${e.evidence_url ? "" : "disabled"} style="${e.evidence_url ? "" : "opacity:.5;cursor:not-allowed;"}">
+              <i class="fa-solid fa-play"></i> Preview
+            </button>
+          </div>
+        </div>
+
+        <div class="row2">
+          <span><i class="fa-regular fa-clock"></i> ${escapeHtml(e.start_iso || "—")}</span>
+          <span><i class="fa-regular fa-hourglass-half"></i> ${escapeHtml(e.end_iso || "—")}</span>
+          <span><i class="fa-solid fa-microchip"></i> ${escapeHtml(e.merge_mode || "—")}</span>
+          <span style="margin-left:auto;"></span>
+          <span>${evidenceLink}</span>
+        </div>
+
+        <div class="videoWrap" style="display:${e.evidence_url ? "block" : "none"};">
+          <video controls preload="metadata" playsinline src="${escapeHtml(e.evidence_url || "")}"></video>
+        </div>
+
+        <div style="color:var(--muted);font-size:12px;line-height:1.45;display:${segs.length ? "block" : "none"};">
+          <b style="color:rgba(234,240,255,.85);font-size:12px;"><i class="fa-solid fa-clapperboard"></i> segments_used (AVI)</b><br/>
+          <span style="opacity:.9">${segLinks || ""}</span>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function renderViolationsView(){
+      const host = $("#allEvents");
+      host.innerHTML = "";
+
+      let arr = [...incidents];
+
+      if (evtFilter !== "all"){
+        arr = arr.filter(e => e.type === evtFilter);
+      }
+
+      const q = ($("#eventSearch").value || "").trim().toLowerCase();
+      if (q){
+        arr = arr.filter(e =>
+          String(e.sid).toLowerCase().includes(q) ||
+          (e.behavior || "").toLowerCase().includes(q) ||
+          (e.type || "").toLowerCase().includes(q) ||
+          (e.folder || "").toLowerCase().includes(q)
+        );
+      }
+
+      $("#evtFilterLabel").textContent = evtFilter.toLowerCase();
+      $("#evtCount").textContent = arr.length;
+
+      if (!arr.length){
+        $("#emptyEvents2").style.display = "block";
+        return;
+      }
+      $("#emptyEvents2").style.display = "none";
+
+      const max = compactMode ? 18 : 120;
+      for (const e of arr.slice(0, max)){
+        host.appendChild(violationCardEl(e));
+      }
+
+      // wire modal preview buttons
+      wirePreviewButtons();
+    }
+
+    // ---------- Preview modal (simple) ----------
+    const previewModalHtml = `
+      <div class="modalBackdrop" id="previewModal">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="Preview">
+          <div class="mh">
+            <h3 id="previewTitle"><i class="fa-solid fa-video"></i> Preview</h3>
+            <button class="btn" id="closePreview"><i class="fa-solid fa-xmark"></i>Close</button>
+          </div>
+          <div class="mb">
+            <div class="videoWrap">
+              <video id="previewVideo" controls preload="metadata" playsinline></video>
+            </div>
+            <div id="previewLinks" style="margin-top:10px;color:var(--muted);font-size:12px;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML("beforeend", previewModalHtml);
+
+    function openPreview(title, url){
+      const modal = $("#previewModal");
+      const v = $("#previewVideo");
+      $("#previewTitle").innerHTML = `<i class="fa-solid fa-video"></i> ${escapeHtml(title || "Preview")}`;
+      v.src = url || "";
+      v.load();
+      $("#previewLinks").innerHTML = url
+        ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> open in new tab</a>`
+        : `<span style="opacity:.75"><i class="fa-regular fa-circle-xmark"></i> no clip</span>`;
+      modal.classList.add("open");
+    }
+
+    function closePreview(){
+      const modal = $("#previewModal");
+      const v = $("#previewVideo");
+      modal.classList.remove("open");
+      v.pause();
+      v.removeAttribute("src");
+      v.load();
+    }
+
+    function wirePreviewButtons(){
+      $$(".openClipBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const url = btn.getAttribute("data-clipurl") || "";
+          const title = btn.getAttribute("data-title") || "Preview";
+          if (!url) return;
+          openPreview(title, url);
+        });
+      });
+    }
+
+    function wirePreviewLinks(){
+      $$(".openClipLink").forEach(a => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          const url = a.getAttribute("data-clipurl") || "";
+          const title = a.getAttribute("data-title") || "Preview";
+          if (!url) return;
+          openPreview(title, url);
+        });
+      });
+    }
+
+    $("#previewModal").addEventListener("click", (e) => {
+      if (e.target === $("#previewModal")) closePreview();
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "closePreview") closePreview();
+    });
+
+    // ---------- Navigation ----------
+    function activateView(name){
+      $$(".nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+      $$(".view").forEach(v => v.classList.remove("active"));
+      $(`#view-${name}`).classList.add("active");
+    }
+
+    // ---------- Modal (settings) ----------
+    function openSettings(){
+      $("#settingsModal").classList.add("open");
+      $("#reportDirInput").value = REPORT_DIR;
+      $("#sessionInput").value = manualSession || "";
+      renderAutoPickChip();
+    }
+    function closeSettings(){
+      $("#settingsModal").classList.remove("open");
+    }
+    function renderAutoPickChip(){
+      $("#autoPickLabel").textContent = autoPickLatest ? "ON" : "OFF";
+      $("#autoPickChip").innerHTML = autoPickLatest
+        ? `<i class="fa-solid fa-toggle-on"></i> <b>ON</b>`
+        : `<i class="fa-solid fa-toggle-off"></i> <b>OFF</b>`;
+    }
+
+    // ---------- Countdown ----------
+    function startCountdown(){
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdown = Math.floor(REFRESH_MS / 1000);
+      $("#countdown").textContent = countdown;
+
+      countdownTimer = setInterval(() => {
+        countdown--;
+        if (countdown <= 0){
+          countdown = Math.floor(REFRESH_MS / 1000);
+        }
+        $("#countdown").textContent = countdown;
+      }, 1000);
+    }
+
+    // ---------- Main load loop ----------
+    async function loadEverything(){
+      try{
+        setStatus("loading");
+
+        // Decide which session to use
+        let targetSession = "";
+        if (autoPickLatest){
+          targetSession = await detectLatestSession();
+        }else{
+          targetSession = (manualSession || "").trim();
+        }
+
+        if (!targetSession){
+          // nothing found
+          sessionFolder = "";
+          warnings = [];
+          incidents = [];
+          students = [];
+          $("#lastUpdate").textContent = nowNice();
+          setStatus("bad", "No session folder found");
+          renderAll();
+          return;
+        }
+
+        // If changed, update
+        sessionFolder = targetSession;
+
+        // Load manifests (incidents)
+        const incidentFolders = await listIncidentFolders(sessionFolder);
+        const man = await loadIncidentManifests(sessionFolder, incidentFolders);
+
+        // Load warnings from CSV
+        const warn = await loadCsvWarnings(sessionFolder);
+
+        warnings = warn;
+        incidents = man;
+
+        // Aggregate students
+        students = aggregateStudents(warnings, incidents);
+
+        // Sort incidents newest first already; ensure
+        incidents.sort((a,b) => (Date.parse(b.start_iso)||0) - (Date.parse(a.start_iso)||0));
+
+        $("#lastUpdate").textContent = nowNice();
+        setStatus("ok");
+        renderAll();
+      }catch(err){
+        console.error(err);
+        $("#lastUpdate").textContent = nowNice() + " (stale)";
+        setStatus("bad", String(err?.message || err));
+        renderAll();
+      }
+    }
+
+    // ---------- Wiring ----------
+    function bindUI(){
+      $$(".nav button[data-view]").forEach(btn => {
+        btn.addEventListener("click", () => activateView(btn.dataset.view));
+      });
+
+      $("#btnRefresh").addEventListener("click", async () => {
+        countdown = Math.floor(REFRESH_MS / 1000);
+        $("#countdown").textContent = countdown;
+        await loadEverything();
+      });
+
+      $("#btnToggleCompact").addEventListener("click", () => {
+        compactMode = !compactMode;
+        renderAll();
+      });
+
+      $("#btnClearSearch").addEventListener("click", () => {
+        $("#studentSearch").value = "";
+        $("#studentSearch2").value = "";
+        $("#eventSearch").value = "";
+        topFilter = "all";
+        evtFilter = "all";
+        renderAll();
+      });
+
+      $("#openSettings").addEventListener("click", openSettings);
+      $("#closeSettings").addEventListener("click", closeSettings);
+      $("#settingsModal").addEventListener("click", (e) => {
+        if (e.target === $("#settingsModal")) closeSettings();
+      });
+
+      $("#applyReportDir").addEventListener("click", async () => {
+        REPORT_DIR = ($("#reportDirInput").value || "exam_reports").trim() || "exam_reports";
+        closeSettings();
+        await loadEverything();
+      });
+
+      $("#autoPickChip").addEventListener("click", async () => {
+        autoPickLatest = !autoPickLatest;
+        renderAutoPickChip();
+        // If turning ON, clear manual session view label
+        await loadEverything();
+      });
+
+      $("#applySession").addEventListener("click", async () => {
+        manualSession = ($("#sessionInput").value || "").trim();
+        autoPickLatest = false;
+        renderAutoPickChip();
+        closeSettings();
+        await loadEverything();
+      });
+
+      // Filter chips
+      $$("[data-chip]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          topFilter = chip.dataset.chip;
+          renderTopStudents();
+        });
+      });
+
+      $$("[data-evt]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          evtFilter = chip.dataset.evt;
+          renderViolationsView();
+        });
+      });
+
+      // Searches
+      $("#studentSearch").addEventListener("input", renderTopStudents);
+      $("#studentSearch2").addEventListener("input", renderStudentsView);
+      $("#eventSearch").addEventListener("input", renderViolationsView);
+
+      // Sorting
+      $("#sortChip").addEventListener("click", () => {
+        sortMode = (sortMode === "severity") ? "recent" : (sortMode === "recent" ? "id" : "severity");
+        $("#sortLabel").textContent = sortMode;
+        renderStudentsView();
+      });
+    }
+
+    // ---------- Boot ----------
+    (function init(){
+      bindUI();
+      startCountdown();
+
+      loadEverything();
+      setInterval(loadEverything, REFRESH_MS);
+    })();
+  </script>
+</body>
+</html>

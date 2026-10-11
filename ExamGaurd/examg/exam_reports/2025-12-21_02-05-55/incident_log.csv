@@ -1,0 +1,3 @@
+StartISO,EndISO,ID,Behavior,PeakSuspicion,MergedFile,MergeMode
+2025-12-21T02:06:03.327532,2025-12-21T02:06:16.673638,3,phone,100,incident_merged.mp4,libx264
+2025-12-21T02:06:03.275014,2025-12-21T02:06:16.708863,2,phone,100,incident_merged.mp4,libx264

@@ -1,0 +1,57 @@
+{
+  "camera": {
+    "video_source": 1,
+    "width": 2514,
+    "height": 1080,
+    "backend": "CAP_DSHOW"
+  },
+  "yolo": {
+    "inference_size": 640,
+    "conf_behavior": 0.2,
+    "model_path": "best.pt",
+    "tracker_yaml": "bytetrack_custom.yaml"
+  },
+  "output": {
+    "report_dir": "exam_reports"
+  },
+  "recording": {
+    "recording_fps": 30.0,
+    "segment_seconds": 2.0,
+    "rolling_minutes": 2.0,
+    "pre_roll_seconds": 2.0,
+    "post_roll_seconds": 2.0,
+    "record_scale": 1.0,
+    "fourcc": "XVID",
+    "segment_ext": "avi",
+    "merged_ext": "mp4",
+    "delete_segment_copies_after_merge": true
+  },
+  "incident_logic": {
+    "risk_levels": {
+      "normal": -2,
+      "looking_left": 3,
+      "looking_right": 3,
+      "looking_back": 5,
+      "phone": 10,
+      "mobile": 10
+    },
+    "warn_thresh": 60,
+    "incident_thresh": 75,
+    "critical_thresh": 90,
+    "stop_hysteresis": 20,
+    "consecutive_normal_to_stop": 45,
+    "dwell_frames": {
+      "phone": 3,
+      "looking_left": 6,
+      "looking_right": 6,
+      "looking_back": 8
+    },
+    "default_dwell": 6,
+    "cooldown_seconds": 3.0,
+    "cooldown_overrides": [
+      "phone"
+    ],
+    "max_incident_seconds": 30.0,
+    "export_queue_max": 50
+  }
+}
